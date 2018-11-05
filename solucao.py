@@ -15,13 +15,8 @@ from sklearn.metrics import classification_report, accuracy_score, confusion_mat
 
 df = pd.read_table(sys.argv[1], header=None, encoding = 'utf-8')
 nq = pd.read_table(sys.argv[2], header=None, encoding = 'utf-8')
-char_list = pd.read_table('recursos/list_characters.txt', sep="\n", header=None, encoding = 'utf-8')
-company_list = pd.read_table('recursos/list_companies.txt', header=None, encoding = 'utf-8')
-genre_list = pd.read_table('recursos/list_genres.txt', header=None, encoding = 'utf-8')
-job_list = pd.read_table('recursos/list_jobs.txt', header=None, encoding = 'utf-8')
-keyword_list = pd.read_table('recursos/list_keywords.txt', header=None, encoding = 'utf-8')
-movie_list = pd.read_table('recursos/list_movies.txt', header=None, encoding = 'utf-8')
-people_list = pd.read_table('recursos/list_people.txt', sep="\n", header=None, encoding = 'utf-8')
+movie = pd.read_table('recursos/list_movies.txt', header=None, encoding = 'utf-8')
+people = pd.read_table('recursos/list_people.txt', sep="\n", header=None, encoding = 'utf-8')
 
 
 Y = df[0]
@@ -29,14 +24,16 @@ X = df[1]
 nq = nq[0]
 
 all_words = []
-key_list = [char_list, company_list, genre_list, job_list, keyword_list,
-            movie_list, people_list]
+people_set = []
+movie_set = []
 
-for key in key_list:
-    key = key[0]
-    
-key_dict = {"movie_key ":movie_list, "character_key":char_list, "company_key ":company_list, "genre_key ":genre_list, 
-            "job_key ":job_list, "people_key ":people_list}
+for word in people[0]:
+    people_set.append(word)
+
+for word in movie[0]:
+    movie_set.append(word)
+
+key_dict = {"movie_key ":movie_set, "people_key ":people_set}
 
 lemmatizer = WordNetLemmatizer()
 stop_words = set(stopwords.words("english"))
@@ -86,6 +83,21 @@ def find_feature_set(data):
         feature_set.append((find_features(text),clss))
     return feature_set
 
+
+def replace_keyword(data):
+    data = data.tolist()
+    text = '<separador>'.join(data)
+    for name, key in key_dict.items():
+        for val in key:
+            if "*" in val:
+                val = val.replace('*','\*')
+            if re.search('\\b' + val + '\\b', text):
+                text = text.replace(val, name)
+    data = text.split('<separador>')
+    data = pd.DataFrame(data)
+    return data
+
+X = replace_keyword(X)[0]
 X = X.apply(lambda text : clean_text(text))
 X = X.apply(lambda text : word_tokenize(text))
 X = X.apply(lambda text : remove_stopwords(text))
@@ -102,6 +114,7 @@ np.random.shuffle(quest) #shuffling para garantir que as classes não ficam agru
 
 feature_set = find_feature_set(quest)
 
+nq = replace_keyword(nq)[0]
 nq = nq.apply(lambda text : clean_text(text))
 nq = nq.apply(lambda text : word_tokenize(text))
 nq = nq.apply(lambda text : remove_stopwords(text))
@@ -116,6 +129,7 @@ nltk_classifier.train(feature_set)
 class_set = nltk_classifier.classify_many(nq_feature_set)
 for label in class_set:
     print(label)
+
 
 
 

@@ -36,7 +36,7 @@ actor_name
 character_name 
 spoken_language 
 person_name 
-original_title 
+actor_name 
 actor_name 
 actor_name 
 character_name 
