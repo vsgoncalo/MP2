@@ -1,2 +1,2 @@
 #!/bin/sh
-python solucao.py
+python solucao.py $1 $2

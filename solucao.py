@@ -12,6 +12,7 @@ from nltk.classify import accuracy
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, accuracy_score, confusion_matrix
 
+
 df = pd.read_table(sys.argv[1], header=None, encoding = 'utf-8')
 nq = pd.read_table(sys.argv[2], header=None, encoding = 'utf-8')
 char_list = pd.read_table('recursos/list_characters.txt', sep="\n", header=None, encoding = 'utf-8')
@@ -113,5 +114,9 @@ for text in nq:
 nltk_classifier = SklearnClassifier(LogisticRegression())
 nltk_classifier.train(feature_set)
 class_set = nltk_classifier.classify_many(nq_feature_set)
+for label in class_set:
+    print(label)
+
+
 
     
